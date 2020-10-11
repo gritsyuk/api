@@ -2,6 +2,8 @@ const express = require('express');
 const mongoose = require('mongoose'); 
 const app = express();
 const morgan = require('morgan');
+const noteRouters = require('./routes/noteRouters');
+// const Msg = require('./models/messageModel');
 
 
 const DB = process.env.DATABASE.replace('<PASSWORD>', process.env.DATABASE_PASSWORD);
@@ -13,7 +15,7 @@ mongoose.connect(DB, {
 .then(() => {
     console.log("Successful connect to database");
 }, ()=>{console.log("Error: Error connect to database")});
-const noteRouters = require('./routes/noteRouters');
+
 // parse application/json
 app.use(express.json());
 if (process.env.NODE_ENV === 'development') {
@@ -21,7 +23,20 @@ if (process.env.NODE_ENV === 'development') {
 }
 app.get("/", (req, res)=>{
     res.send("Hi");
-})
+});
+
+// const newMsg = new Msg({
+//     username : 'Jon',
+//     message: 'Fers comments'
+// });
+
+// newMsg.save().then(doc => {
+//     console.log(doc);
+// }).catch(err => {
+//     console.log('ERROR: ', err);
+// })
+
+
 console.log(process.env.DBUSER);
 // app.use((req, res, next)=>{
 //     console.log(Date.now());

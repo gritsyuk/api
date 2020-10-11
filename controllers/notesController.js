@@ -1,22 +1,22 @@
 const Note = require('../models/noteModel');
 
+exports.getAllNotes = async (req, res) => {
+    try {
+        const notes = await Note.find();
+        res.status(200).json({
+            status: "success",
+            results: notes.length,
+            data: {
+                notes
+            }
+        });
+    } catch (err) {
+        res.status(404).json({
+            status: "fail",
+            message: err
+        });
 
-
-
-    var post =  [
-        {
-        title: 'title 1',
-        text: 'text bhjgjhgjhd djfgdhfjgd'
-        },
-        {
-        title: 'title 2',
-        text: '5 second text bhjgjhgjhd djfgdhfjgd'
-        }
-    ]
-
-exports.getAllNotes = (req, res) => {
-
-    res.send(post); 
+    }
 }
 
 exports.addNote = async (req, res) => {
@@ -36,28 +36,51 @@ exports.addNote = async (req, res) => {
         
         res.status(201).json({
             status: 'success',
-            time: req.time(),
             data: {
                 note: newNote
             }
         });
-    } catch {
+    } catch (err) {
         res.status(404).json({
             status: 'fail',
             message: 'Invalid data sent!'
         });
     }
-}
-exports.getNote = (req, res) => {
-    res.send({
-        status: 'okay',
-        time: req.time
-})
-}
+};
 
-exports.updateNote = (req, res) => {
-    res.send({
-        status: 'okay',
-        time: req.time
-})
+exports.getNote = async (req, res) => {
+try {
+    const note = await Note.findById(req.params.id); //findOne({_id: req.params.id})
+    res.status(201).json({
+        status: 'success',
+        data: {
+            note
+        }
+    });
+} catch (err) {
+    res.status(404).json({
+        status: 'fail',
+        message: 'Invalid data sent!'
+    });
+}
+};
+
+exports.updateNote = async (req, res) => {
+    try {
+        const note = await Note.findByIdAndUpdate(req.params.id, req.body, {
+            new: true,
+            runValidators: true
+        }); 
+        res.status(201).json({
+            status: 'success',
+            data: {
+                note
+            }
+        });
+    } catch (err) {
+        res.status(404).json({
+            status: 'fail',
+            message: 'Invalid data sent!'
+        });
+    }
 }

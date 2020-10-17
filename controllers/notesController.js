@@ -2,7 +2,26 @@ const Note = require('../models/noteModel');
 
 exports.getAllNotes = async (req, res) => {
     try {
-        const notes = await Note.find();
+
+        const queryObj = {...req.query};
+        const exclude = ['page', 'limit', 'sort'];
+        console.log(queryObj);
+        exclude.forEach((item) => delete queryObj[item]);
+
+        let queryString = JSON.stringify(queryObj);
+        queryString = queryString.replace(/\b(gte|gt|lte|lt)\b/g, match => `$${match}`);
+        console.log(JSON.parse(queryString));
+        let query = Note.find(JSON.parse(queryString));
+
+        if (req.query.sort) {
+            const sortBy = req.query.sort.split(',').join(' ');
+            query.sort(sortBy);
+        } else {
+            query.sort('-create_date');
+        }
+
+        const notes = await query;
+
         res.status(200).json({
             status: "success",
             results: notes.length,
@@ -71,7 +90,7 @@ exports.updateNote = async (req, res) => {
             new: true,
             runValidators: true
         }); 
-        res.status(201).json({
+        res.status(204).json({
             status: 'success',
             data: {
                 note
@@ -81,6 +100,21 @@ exports.updateNote = async (req, res) => {
         res.status(404).json({
             status: 'fail',
             message: 'Invalid data sent!'
+        });
+    }
+}
+
+exports.deleteNote = async (req, res) => {
+    try {
+        const note = await Note.findByIdAndDelete(req.params.id); 
+        res.status(204).json({
+            status: 'success',
+            data: null
+        });
+    } catch (err) {
+        res.status(404).json({
+            status: 'fail',
+            message: err
         });
     }
 }

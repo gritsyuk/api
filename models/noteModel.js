@@ -3,23 +3,29 @@ const mongoose = require('mongoose');
 const noteSchema = new mongoose.Schema({
     title : {
         type: String,
+        trim: true,
+        require: [true, 'A Note must have a name'],
         unique: true
     },
     author: {
-        type: String
+        type: String,
+        trim: true
     },
     create_date: {
         type: Date,
-        default: new Date()
+        default: Date.now()
     },
     edit_date: {
         type: Date,
     },
     body: {
-        type: String
+        type: String,
+        trim: true
     },
-    tags : {
-        type: Array
+    tags : [String],
+    rating: {
+        type: Number,
+        default: 0
     }
 }
 );

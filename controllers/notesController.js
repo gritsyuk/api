@@ -4,20 +4,29 @@ exports.getAllNotes = async (req, res) => {
     try {
 
         const queryObj = {...req.query};
-        const exclude = ['page', 'limit', 'sort'];
-        console.log(queryObj);
+        const exclude = ['page', 'limit', 'sort', 'fields'];
+        // console.log(queryObj);
         exclude.forEach((item) => delete queryObj[item]);
 
         let queryString = JSON.stringify(queryObj);
         queryString = queryString.replace(/\b(gte|gt|lte|lt)\b/g, match => `$${match}`);
-        console.log(JSON.parse(queryString));
+    
+
         let query = Note.find(JSON.parse(queryString));
 
         if (req.query.sort) {
             const sortBy = req.query.sort.split(',').join(' ');
-            query.sort(sortBy);
+            query = query.sort(sortBy);
         } else {
-            query.sort('-create_date');
+            query = query.sort('-create_date');
+        }
+
+        if (req.query.fields) {
+            const fields = req.query.fields.split(',').join(' ');
+            // console.log(fields);
+            query = query.select(fields);
+        } else {
+            query = query.select('-__v');
         }
 
         const notes = await query;

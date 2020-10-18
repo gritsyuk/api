@@ -13,14 +13,14 @@ exports.getAllNotes = async (req, res) => {
     
 
         let query = Note.find(JSON.parse(queryString));
-
+// SORTING BY FIELDS
         if (req.query.sort) {
             const sortBy = req.query.sort.split(',').join(' ');
             query = query.sort(sortBy);
         } else {
             query = query.sort('-create_date');
         }
-
+// SELECT SOME FIELDS
         if (req.query.fields) {
             const fields = req.query.fields.split(',').join(' ');
             // console.log(fields);
@@ -28,7 +28,19 @@ exports.getAllNotes = async (req, res) => {
         } else {
             query = query.select('-__v');
         }
+// PAGINATION GET LIMIT RESULT
 
+            let limit = req.query.limit * 1 || 5;
+            let page = req.query.page * 1 || 1;
+            let skip = (page - 1) * limit;
+            query = query.skip(skip).limit(limit);
+
+            if (req.query.page) {
+                let countQuery = await query.countDocuments();
+                let maxPage =  Math.ceil(countQuery / limit);
+                if (page > maxPage) throw new Error('Page size maximum');
+            }
+// EXECUTE QUERY
         const notes = await query;
 
         res.status(200).json({

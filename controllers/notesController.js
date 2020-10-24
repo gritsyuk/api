@@ -1,47 +1,15 @@
 const Note = require('../models/noteModel');
+const ApiFeatures = require('../utils/apiFeatures');
+
 
 exports.getAllNotes = async (req, res) => {
     try {
-
-        const queryObj = {...req.query};
-        const exclude = ['page', 'limit', 'sort', 'fields'];
-        // console.log(queryObj);
-        exclude.forEach((item) => delete queryObj[item]);
-
-        let queryString = JSON.stringify(queryObj);
-        queryString = queryString.replace(/\b(gte|gt|lte|lt)\b/g, match => `$${match}`);
-    
-
-        let query = Note.find(JSON.parse(queryString));
-// SORTING BY FIELDS
-        if (req.query.sort) {
-            const sortBy = req.query.sort.split(',').join(' ');
-            query = query.sort(sortBy);
-        } else {
-            query = query.sort('-create_date');
-        }
-// SELECT SOME FIELDS
-        if (req.query.fields) {
-            const fields = req.query.fields.split(',').join(' ');
-            // console.log(fields);
-            query = query.select(fields);
-        } else {
-            query = query.select('-__v');
-        }
-// PAGINATION GET LIMIT RESULT
-
-            let limit = req.query.limit * 1 || 5;
-            let page = req.query.page * 1 || 1;
-            let skip = (page - 1) * limit;
-            query = query.skip(skip).limit(limit);
-
-            if (req.query.page) {
-                let countQuery = await query.countDocuments();
-                let maxPage =  Math.ceil(countQuery / limit);
-                if (page > maxPage) throw new Error('Page size maximum');
-            }
-// EXECUTE QUERY
-        const notes = await query;
+        let apiFeatures = new ApiFeatures(Note.find(), req.query)
+        .find()
+        .sort()
+        .select()
+        .pagination();
+        const notes = await apiFeatures.query;
 
         res.status(200).json({
             status: "success",

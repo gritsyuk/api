@@ -3,6 +3,7 @@ const mongoose = require('mongoose');
 const app = express();
 const morgan = require('morgan');
 const noteRouters = require('./routes/noteRouters');
+const AppError = require('././utils/appError');
 // const Msg = require('./models/messageModel');
 
 
@@ -47,6 +48,19 @@ console.log(process.env.DBUSER);
 
 app.use('/api/v1/notes', noteRouters);
 
+app.all('*', (req, res, next) => {
+    // let err = new Error(`Can't find ${req.originalUrl} on server`);
+    // err.statusCode = 404;
+    // err.status = "fail";
+    next(new AppError(`Can't find ${req.originalUrl} on server`, 404));
+});
+
+app.use((err, req, res, next) => {
+    res.status(err.statusCode || 500).json({
+        status: err.status || 'error',
+        message: err.message
+    });
+});
 
 module.exports = app;
 

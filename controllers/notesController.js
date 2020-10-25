@@ -4,12 +4,13 @@ const ApiFeatures = require('../utils/apiFeatures');
 
 exports.getAllNotes = async (req, res) => {
     try {
-        let apiFeatures = new ApiFeatures(Note.find(), req.query)
+        let features = new ApiFeatures(Note.find(), req.query)
         .find()
         .sort()
         .select()
         .pagination();
-        const notes = await apiFeatures.query;
+
+        const notes = await features.query;
 
         res.status(200).json({
             status: "success",
@@ -51,7 +52,7 @@ exports.addNote = async (req, res) => {
     } catch (err) {
         res.status(404).json({
             status: 'fail',
-            message: 'Invalid data sent!'
+            message: err
         });
     }
 };

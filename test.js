@@ -1,20 +1,12 @@
-class ApiFeatures {
-    constructor (query, string) {
-        this.query = query;
-        this.string = string;
-    }
-    find() {
-        this.query = this.query(this.string);
-        return this;
-    }
-}
+const https = require('https');
 
-function albert(x) {
-    return `this is ${x}`;
-}
+https.get('https://pbs.twimg.com/profile_images/1060122402204606464/Uy0ltR1b.jpg', (res) => {
 
-let k = albert;
 
-let test = new ApiFeatures(k, '345');
+  res.on('data', (d) => {
+    console.log(d);
+  });
 
-console.log(test.find().query);
+}).on('error', (e) => {
+  console.error(e);
+});

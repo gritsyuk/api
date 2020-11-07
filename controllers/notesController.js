@@ -1,9 +1,9 @@
 const Note = require('../models/noteModel');
 const ApiFeatures = require('../utils/apiFeatures');
+const catchAsync = require('../utils/catchAsync');
 
 
-exports.getAllNotes = async (req, res) => {
-    try {
+exports.getAllNotes = catchAsync(async (req, res, next) => {
         let features = new ApiFeatures(Note.find(), req.query)
         .find()
         .sort()
@@ -19,28 +19,10 @@ exports.getAllNotes = async (req, res) => {
                 notes
             }
         });
-    } catch (err) {
-        res.status(404).json({
-            status: "fail",
-            message: err
-        });
 
-    }
-}
+});
 
-exports.addNote = async (req, res) => {
-    // const createNote = new Note({
-    //     title : 'My third Note',
-    //     author: 'Igor Gritsyuk',
-    //     body: 'Разработка и производство противоугонных систем. Новый подход к устройствам защиты автомобиля!',
-    //     tags : ['one', 'two', 'thre']
-    // });
-    // createNote.save().then(res => {
-    //     console.log(res);
-    // }).catch(err => {
-    //     console.log(err);
-    // });
-    try {
+exports.addNote = catchAsync(async (req, res, next) => {
         const newNote = await Note.create(req.body);
         
         res.status(201).json({
@@ -49,16 +31,10 @@ exports.addNote = async (req, res) => {
                 note: newNote
             }
         });
-    } catch (err) {
-        res.status(404).json({
-            status: 'fail',
-            message: err
-        });
-    }
-};
 
-exports.getNote = async (req, res) => {
-try {
+});
+
+exports.getNote = catchAsync(async (req, res, next) => {
     const note = await Note.findById(req.params.id); //findOne({_id: req.params.id})
     res.status(201).json({
         status: 'success',
@@ -66,16 +42,9 @@ try {
             note
         }
     });
-} catch (err) {
-    res.status(404).json({
-        status: 'fail',
-        message: 'Invalid data sent!'
-    });
-}
-};
+});
 
-exports.updateNote = async (req, res) => {
-    try {
+exports.updateNote = catchAsync(async (req, res, next) => {
         const note = await Note.findByIdAndUpdate(req.params.id, req.body, {
             new: true,
             runValidators: true
@@ -86,25 +55,12 @@ exports.updateNote = async (req, res) => {
                 note
             }
         });
-    } catch (err) {
-        res.status(404).json({
-            status: 'fail',
-            message: 'Invalid data sent!'
-        });
-    }
-}
+});
 
-exports.deleteNote = async (req, res) => {
-    try {
+exports.deleteNote = catchAsync(async (req, res, next) => {
         const note = await Note.findByIdAndDelete(req.params.id); 
         res.status(204).json({
             status: 'success',
             data: null
         });
-    } catch (err) {
-        res.status(404).json({
-            status: 'fail',
-            message: err
-        });
-    }
-}
+});

@@ -1,6 +1,7 @@
 const Note = require('../models/noteModel');
 const ApiFeatures = require('../utils/apiFeatures');
 const catchAsync = require('../utils/catchAsync');
+const AppError = require('../utils/appError');
 
 
 exports.getAllNotes = catchAsync(async (req, res, next) => {
@@ -36,6 +37,10 @@ exports.addNote = catchAsync(async (req, res, next) => {
 
 exports.getNote = catchAsync(async (req, res, next) => {
     const note = await Note.findById(req.params.id); //findOne({_id: req.params.id})
+
+    if (!note) {
+        return next(new AppError(`Can't find note with this ID: ${req.params.id}`, 404))
+    }
     res.status(201).json({
         status: 'success',
         data: {
@@ -49,6 +54,11 @@ exports.updateNote = catchAsync(async (req, res, next) => {
             new: true,
             runValidators: true
         }); 
+
+        if (!note) {
+            return next(new AppError(`Can't find note with this ID: ${req.params.id}`, 404))
+        }
+
         res.status(204).json({
             status: 'success',
             data: {
@@ -59,6 +69,10 @@ exports.updateNote = catchAsync(async (req, res, next) => {
 
 exports.deleteNote = catchAsync(async (req, res, next) => {
         const note = await Note.findByIdAndDelete(req.params.id); 
+
+        if (!note) {
+            return next(new AppError(`Can't find note with this ID: ${req.params.id}`, 404))
+        }
         res.status(204).json({
             status: 'success',
             data: null

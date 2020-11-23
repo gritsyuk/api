@@ -6,7 +6,6 @@ const noteRouters = require('./routes/noteRouters');
 const userRouters = require('./routes/userRouters');
 const AppError = require('././utils/appError');
 const errorController = require('./controllers/errorController');
-// const Msg = require('./models/messageModel');
 
 
 const DB = process.env.DATABASE.replace('<PASSWORD>', process.env.DATABASE_PASSWORD);
@@ -39,8 +38,6 @@ app.get("/", (req, res)=>{
 //     console.log('ERROR: ', err);
 // })
 
-
-console.log(process.env.DBUSER);
 // app.use((req, res, next)=>{
 //     console.log(Date.now());
 //     req.time = new Date().toISOString(); 

@@ -1,6 +1,6 @@
 const User = require('../models/userModel');
 const util = require('util');
-// const ApiFeatures = require('../utils/apiFeatures');
+const sendEmail = require('../utils/email');
 const catchAsync = require('../utils/catchAsync');
 const AppError = require('../utils/appError');
 const jwt = require('jsonwebtoken');
@@ -87,7 +87,60 @@ exports.protect = catchAsync(async (req, res, next) => {
         new AppError('User recently changed password! Please log in again.', 401)
     );   
    }
+   req.user = currentUser;
 
-next();
+   next();
 });
 
+exports.restrictTo = (...roles) => {
+    return (req, res, next) => {
+        //roles ['admin', 'lead-guide'] role = 'user'
+        if (!roles.includes(req.user.role)) {
+            return next(new AppError('You do not have permission to perform this action', 403));
+        }
+
+        next();
+    }
+}
+
+exports.forgotPassword = catchAsync(async (req, res, next) => {
+    // 1) Get user based on POSTed email
+    const user = await User.findOne({email: req.body.email});
+    if (!user) {
+        return next(new AppError('The is no user with email address', 404));
+    }
+
+    // 2) Generate the random reset token
+    const resetToken = user.createPasswordResetToken();
+    await user.save({ validateBeforeSave: false }); 
+    
+    // 3) Send it to user's email
+    const resetURL = `${req.protocol}://${req.get('host'
+    )}/api/vi/users/resetPassword/${resetToken}`;
+
+    try {
+        await sendEmail({
+            email: user.email,
+            subject: 'You password reset token (valid for 10 min)',
+            message: resetURL
+        });
+
+        res.status(200).json({
+            status: 'success',
+            message: 'Token send to email!'
+        });
+
+    } catch(err) {
+        user.passwordResetToken = undefined;
+        user.passwordResetExpires = undefined;
+        await user.save({validateBeforeSave: false});
+        
+        return next(new AppError('There was an error sending the email. Try again later',
+         500)
+        );
+    }
+
+
+});
+
+exports.resetPassword = (req, res, next) => {};

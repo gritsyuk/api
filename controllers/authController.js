@@ -144,7 +144,7 @@ exports.forgotPassword = catchAsync(async (req, res, next) => {
 
 });
 
-exports.resetPassword = (req, res, next) => {
+exports.resetPassword = catchAsync(async(req, res, next) => {
     // 1) Get user based on the token
     const  hashedToken = crypto
         .createHash('sha256')
@@ -159,6 +159,22 @@ exports.resetPassword = (req, res, next) => {
     if (!user) {
         return next(new AppError('Token is invalid or has expired', 400));
     }
+    user.password = req.body.password;
+    user.passwordConfirm = req.body.passwordConfirm;
+    user.passwordResetToken = undefined;
+    user.passwordResetExpires = undefined;
+    await user.save();
     // 3) Update changetPasswordAt property for the user
+    
     // 4) Log the user in, send JWT
-};
+    const token = signToken(user._id);
+
+    res.status(201).json({
+        status: 'success',
+        token,
+        data: {
+            user: newUser
+        }
+    });
+
+});
